@@ -67,6 +67,7 @@ class Config(object):
     CHROMA_HOST = "10.0.27.59"
     CHROMA_PORT = 8000
     PERSIST_DIR = '/data/coding/storage'
+    RERANK_MODEL_PATH = '/mnt/models_share/bge-reranker-v2-m3'
     COLLECTION_NAME = "chinese_sops"
     TOP_K = 10
     RERANK_TOP_K = 3

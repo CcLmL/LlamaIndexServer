@@ -1,5 +1,6 @@
 from llama_index.embeddings.xinference import XinferenceEmbedding
 from llama_index.postprocessor.xinference_rerank import XinferenceRerank
+from llama_index.core.postprocessor import SentenceTransformerRerank
 from sentence_transformers import SentenceTransformer
 from config import Config
 
@@ -23,8 +24,13 @@ def init_embedding_model():
 
 def init_reranker_model():
     # 初始化reranker模型
-    reranker = XinferenceRerank(model='bge-reranker-v2-m3', base_url='http://10.0.27.59:9997',
-                                top_n=Config.RERANK_TOP_K)
+    reranker = SentenceTransformerRerank(
+        model=Config.RERANK_MODEL_PATH,
+        top_n=Config.RERANK_TOP_K,
+        device='cuda'
+    )
+    # reranker = XinferenceRerank(model='bge-reranker-v2-m3', base_url='http://10.0.27.59:9997',
+    #                             top_n=Config.RERANK_TOP_K)
     return reranker
 
 
