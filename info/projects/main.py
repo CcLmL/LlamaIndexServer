@@ -1,5 +1,7 @@
 import time
+import re
 from llama_index.core import SimpleDirectoryReader, Settings, VectorStoreIndex, StorageContext, PromptTemplate
+from llama_index.core.vector_stores import MetadataFilters, ExactMatchFilter, FilterOperator
 from llama_index.core.node_parser import SemanticSplitterNodeParser
 from llama_index.llms.deepseek import DeepSeek
 import chromadb
@@ -95,6 +97,53 @@ def init_vector_store(nodes):
     return index
 
 
+def extract_code(query: str):
+    query = query.upper()
+    patterns = [
+        r'TQXS-SOP-[A-Z]+-\d+',  # TQXS-SOP-EHS-003
+        r'SOP-[A-Z]+-\d+',  # SOP-EHS-003
+        r'[A-Z]+-\d+',
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, query)
+        if match:
+            return match.group()
+
+    return ''
+
+
+def normalize_code(query: str):
+    query = query.upper().replace(" ", "")
+
+    patterns = [
+        r'TQXS-SOP-[A-Z]+-\d+',
+        r'SOP-[A-Z]+-\d+',
+        r'[A-Z]+-\d+'
+    ]
+
+    for pattern in patterns:
+        match = re.search(pattern, query)
+
+        if not match:
+            continue
+
+        code = match.group()
+
+        # 已经是标准格式
+        if code.startswith("TQXS-SOP-"):
+            return code
+
+        # SOP-PTS-002
+        if code.startswith("SOP-"):
+            return f"TQXS-{code}"
+
+        # GEN-001 / EHS-003 / QA-001
+        return f"TQXS-SOP-{code}"
+
+    return None
+
+
 def init_llm_model():
     # 初始化大语言模型
     llm = DeepSeek(model="deepseek-chat", api_key="cc", api_base="http://10.0.27.59:8001/v1",
@@ -136,9 +185,21 @@ def llama_index_main(question, min_rerank_score=0.5, top_k_str=3):
     print(f"索引加载耗时：{time.time() - start_time:.2f}s")
 
     # 创建检索器和响应合成器
-    retriever = index.as_retriever(
-        similarity_top_k=top_k_str
-    )
+    code = extract_code(question)
+    full_code = normalize_code(code)
+    print("code", code, full_code)
+    if full_code:
+        filters = MetadataFilters(
+            filters=[ExactMatchFilter(key="sop_index", value=full_code)]
+        )
+        retriever = index.as_retriever(
+            similarity_top_k=top_k_str,
+            filters=filters
+        )
+    else:
+        retriever = index.as_retriever(
+            similarity_top_k=top_k_str
+        )
     # response_synthesizer = get_response_synthesizer(
     #     text_qa_template=response_template,
     #     verbose=True
@@ -215,4 +276,5 @@ def llama_index_main(question, min_rerank_score=0.5, top_k_str=3):
 
 
 if __name__ == '__main__':
-    llama_index_main('为什么要进行计算机化系统的验证？')
+    # llama_index_main('为什么要进行计算机化系统的验证？')
+    print(normalize_code(extract_code('qwd-EHS-002 职员的健康监护2.1.json')))
