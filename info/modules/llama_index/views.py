@@ -12,9 +12,11 @@ from info.utils.response_code import RET, error_map
 def handle_llama_index_retrival():
     # {'retrieval_setting': {'top_k': 2, 'score_threshold': 0.0}, 'query': '信息中心受火灾\n', 'knowledge_id': '1212', 'metadata_condition': None}
     if request.is_json:
+        print(request.json)
         query = request.json.get("query")
         min_rerank_score = request.json.get("retrieval_setting")["score_threshold"]
-        data = llama_index_main(query, min_rerank_score)
+        top_k_str = request.json.get("retrieval_setting")["top_k"]
+        data = llama_index_main(query, min_rerank_score, top_k_str)
         # data = [{
         #    "metadata": {
         #        "path": "s3://dify/knowledge.txt",
@@ -34,6 +36,7 @@ def handle_llama_index_retrival():
         #        "content": "The Innovation Engine for GenAI Applications"
         #    }
         # ]
+        print(data)
         return Response(
             response=json.dumps({"records": data}),
             status=200,

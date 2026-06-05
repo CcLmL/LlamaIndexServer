@@ -6,10 +6,11 @@ from datetime import date, datetime
 import os
 from config import CustomJSONProvider, config_dict
 from info.utils.model_extension import init_embedding_model, init_reranker_model
+from llama_index.postprocessor.xinference_rerank import XinferenceRerank
 
 # 模型对象全局化
 embedding_model = None
-reranker_model = None
+reranker_model = None  # type: XinferenceRerank|None
 
 
 # 配置日志文件

@@ -124,7 +124,7 @@ def init_llm_model():
 # response_template = PromptTemplate(QA_TEMPLATE)
 
 
-def llama_index_main(question, min_rerank_score=0.5):
+def llama_index_main(question, min_rerank_score=0.5, top_k_str=3):
     # llm, embed_model = init_llm_model(), init_embedding_model()
     # llm = init_llm_model()
     # print(question)
@@ -137,7 +137,7 @@ def llama_index_main(question, min_rerank_score=0.5):
 
     # 创建检索器和响应合成器
     retriever = index.as_retriever(
-        similarity_top_k=Config.TOP_K
+        similarity_top_k=top_k_str
     )
     # response_synthesizer = get_response_synthesizer(
     #     text_qa_template=response_template,
@@ -164,7 +164,7 @@ def llama_index_main(question, min_rerank_score=0.5):
     # 2. 重排序
     reranked_nodes = reranker_model.postprocess_nodes(
         initial_nodes,
-        query_str=question
+        query_str=question,
     )
     rerank_time = time.time() - start_time - retrieval_time
 
@@ -202,7 +202,7 @@ def llama_index_main(question, min_rerank_score=0.5):
         }
         record_dict_temp['score'] = filtered_node.score
         record_dict_temp['title'] = filtered_node.metadata.get("file_name")
-        record_dict_temp['content'] = filtered_node.text
+        record_dict_temp['content'] = filtered_node.metadata.get("file_name") + ' ' + filtered_node.text
         res_data.append(record_dict_temp)
     # for idx, node in enumerate(response.source_nodes, 1):
     #     meta = node.metadata

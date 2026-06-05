@@ -70,7 +70,7 @@ class Config(object):
     RERANK_MODEL_PATH = '/mnt/models_share/bge-reranker-v2-m3'
     COLLECTION_NAME = "chinese_sops"
     TOP_K = 10
-    RERANK_TOP_K = 3
+    RERANK_TOP_K = 20
 
 
 class CeleryConfig(object):

@@ -7,11 +7,11 @@
 # @File: app.py
 import sys
 from info import create_app
-
-# from info import socketio
+# import multiprocessing
 
 sys.path.append('./info/projects')
 app = create_app("dev")
 
 if __name__ == '__main__':
+    # multiprocessing.set_start_method("spawn", force=True)
     app.run(host="0.0.0.0", port=5000)
